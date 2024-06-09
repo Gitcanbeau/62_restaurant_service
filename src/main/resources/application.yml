@@ -1,0 +1,62 @@
+server:
+  port: 9091
+
+spring:
+  profiles:
+    active: dev
+
+  application:
+    name: RESTAURANT-SERVICE
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+
+#
+## below is old version:
+#server:
+#  port: 9091
+#
+#eureka:
+#  client:
+#    service-url:
+#      defaultZone: http://localhost:8761/eureka/
+##this defaultZone is what we checked in the Eureka service, the 8761 port in also defined in that service
+##
+#spring:
+#  application:
+#    name: RESTAURANT-SERVICE
+#  datasource:
+#    url: jdbc:mysql://localhost:3306/restaurantdb
+#    password: mysql@950206
+#    username: root
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#  jpa:
+#    hibernate:
+#      ddl-auto: update
+## this ddl-auto update means if i have it as update every time, my data will not be discarded
+##  and new tables will not be created if i have made it as update rather than create,
+## this ddl-auto create then everytime i start my application,
+##  all the data in the database tables will be removed, new tables will be created
+##in our case, we only want update
+#    show-sql: true
+#    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+##in repo file, we can use the simple English word "findAll" to achieve find all function.
+##this is because we use "org.hibernate.dialect.MySQL5InnoDBDialect" to convert English language to specfic database language
+## if you have used Oracle, this dialect would have changed because the querying pattern for MySQL is different from the Oracle.
+#
+#
+
+
+
+
+
+
+
+
+
+
+
