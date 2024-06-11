@@ -12,10 +12,16 @@ pipeline {
   }
 
   stages {
+    stage('Debug') {
+      steps {
+          echo "DockerHub Username: ${env.DOCKERHUB_CREDENTIALS_USR}"
+          echo "DockerHub Password: ${env.DOCKERHUB_CREDENTIALS_PSW}"
+      }
+    }
 
     stage('Maven Build'){
         steps{
-        sh 'mvn clean package  -DskipTests'
+            sh 'mvn clean package  -DskipTests'
         }
     }
 
@@ -26,47 +32,53 @@ pipeline {
     }
 
     stage('SonarQube Analysis') {
-  steps {
-    sh 'mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar -Dsonar.host.url=http://3.101.143.247:9000/ -Dsonar.login=squ_26962e0f1dc3b125ac1425499d89f367089a36af'
-  }
-}
+      steps {
+        sh 'mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar -Dsonar.host.url=http://3.101.143.247:9000/ -Dsonar.login=squ_26962e0f1dc3b125ac1425499d89f367089a36af'
+      }
+    }
 
 
-   stage('Check code coverage') {
-            steps {
-                script {
-                    def token = "squ_26962e0f1dc3b125ac1425499d89f367089a36af"
-                    def sonarQubeUrl = "http://3.101.143.247:9000/api"
-                    def componentKey = "com.codeddecode:restaurantlisting"
-                    def coverageThreshold = 0.0
+    stage('Check code coverage') {
+        steps {
+            script {
+                def token = "squ_26962e0f1dc3b125ac1425499d89f367089a36af"
+                def sonarQubeUrl = "http://3.101.143.247:9000/api"
+                def componentKey = "com.codeddecode:restaurantlisting"
+                def coverageThreshold = 0.0
 
-                    def response = sh (
-                        script: "curl -H 'Authorization: Bearer ${token}' '${sonarQubeUrl}/measures/component?component=${componentKey}&metricKeys=coverage'",
-                        returnStdout: true
-                    ).trim()
+                def response = sh (
+                    script: "curl -H 'Authorization: Bearer ${token}' '${sonarQubeUrl}/measures/component?component=${componentKey}&metricKeys=coverage'",
+                    returnStdout: true
+                ).trim()
 
-                    def coverage = sh (
-                        script: "echo '${response}' | jq -r '.component.measures[0].value'",
-                        returnStdout: true
-                    ).trim().toDouble()
+                def coverage = sh (
+                    script: "echo '${response}' | jq -r '.component.measures[0].value'",
+                    returnStdout: true
+                ).trim().toDouble()
 
-                    echo "Coverage: ${coverage}"
+                echo "Coverage: ${coverage}"
 
-                    if (coverage < coverageThreshold) {
-                        error "Coverage is below the threshold of ${coverageThreshold}%. Aborting the pipeline."
-                    }
+                if (coverage < coverageThreshold) {
+                    error "Coverage is below the threshold of ${coverageThreshold}%. Aborting the pipeline."
                 }
             }
-        } 
+        }
+    }
 
+    stage('Docker Login Test') {
+        steps {
+            echo 'Testing Docker Login...'
+            sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+        }
+    }
 
-      stage('Docker Build and Push') {
+    stage('Docker Build and Push') {
       steps {
           sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
           sh 'docker build -t canbeaudocker/restaurant-listing-service:${VERSION} .'
           sh 'docker push canbeaudocker/restaurant-listing-service:${VERSION}'
       }
-    } 
+    }
 
 
      stage('Cleanup Workspace') {
@@ -96,6 +108,18 @@ pipeline {
       }
     }
 
+  }
+
+  post {
+      always {
+          echo 'Pipeline finished.'
+      }
+      success {
+          echo 'Pipeline succeeded.'
+      }
+      failure {
+          echo 'Pipeline failed.'
+      }
   }
 
 }
