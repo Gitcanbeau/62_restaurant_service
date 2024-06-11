@@ -102,7 +102,7 @@ pipeline {
 
         stage('Update Image Tag in GitOps') {
             steps {
-                checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[credentialsId: 'git-ssh', url: 'git@github.com:Gitcanbeau/67_deployment_service.git']])
+                checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'git-ssh', url: 'git@github.com:Gitcanbeau/67_deployment_service.git']])
                 script {
                     sh '''
                         sed -i "s/image:.*/image: canbeaudocker\\/restaurant-listing-service:${VERSION}/" aws/restaurant-manifest.yml
