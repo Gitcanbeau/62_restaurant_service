@@ -102,15 +102,25 @@ pipeline {
 
         stage('Update Image Tag in GitOps') {
             steps {
-                checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'git-ssh', url: 'git@github.com:Gitcanbeau/67_deployment_service.git']])
                 script {
-                    sh '''
-                        sed -i "s/image:.*/image: canbeaudocker\\/restaurant-listing-service:${VERSION}/" aws/restaurant-manifest.yml
-                    '''
+                    checkout([
+                        $class: 'GitSCM',
+                        branches: [[name: '*/main']],
+                        doGenerateSubmoduleConfigurations: false,
+                        extensions: [],
+                        userRemoteConfigs: [[
+                            url: 'git@github.com:Gitcanbeau/67_deployment_service.git',
+                            credentialsId: 'git-ssh'
+                        ]]
+                    ])
+                    // Update the image tag in the manifest file
+                    sh 'sed -i \'s/image:.*/image: canbeaudocker\\/restaurant-listing-service:26/\' aws/restaurant-manifest.yml'
                     sh 'git add aws/restaurant-manifest.yml'
-                    sh 'git commit -m "Update image tag to ${VERSION}"'
-                    sshagent(['git-ssh']) {
-                        sh 'git push'
+                    sh 'git commit -m "Update image tag to 26"'
+
+                    // Use sshagent to push changes
+                    sshagent(credentials: ['jenkins']) {
+                        sh 'git push origin HEAD:main'
                     }
                 }
             }
