@@ -4,8 +4,6 @@ pipeline {
     environment {
         DOCKERHUB_CREDENTIALS = credentials('DOCKER_HUB_CREDENTIAL')
         VERSION = "${env.BUILD_ID}"
-        DOCKER_HUB_USERNAME = 'canbeaudocker'
-        DOCKER_HUB_PASSWORD = 'Docker950206'
     }
 
     tools {
@@ -16,8 +14,8 @@ pipeline {
 
         stage('Debug') {
             steps {
-                echo "DockerHub Username: ${env.DOCKERHUB_CREDENTIALS_USR}"
-                echo "DockerHub Password: ${env.DOCKERHUB_CREDENTIALS_PSW}"
+                echo "DockerHub Username: ${DOCKERHUB_CREDENTIALS_USR}"
+                echo "DockerHub Password: ${DOCKERHUB_CREDENTIALS_PSW}"
             }
         }
 
