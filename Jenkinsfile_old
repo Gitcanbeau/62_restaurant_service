@@ -2,6 +2,7 @@ pipeline {
     agent any
 
     environment {
+        DOCKERHUB_CREDENTIALS = credentials('DOCKER_HUB_CREDENTIAL')
         VERSION = "${env.BUILD_ID}"
     }
 
@@ -10,23 +11,26 @@ pipeline {
     }
 
     stages {
+
         stage('Debug Credentials') {
             steps {
-                script {
-                    withCredentials([usernamePassword(credentialsId: 'DOCKER_HUB_CREDENTIAL', passwordVariable: 'DOCKERHUB_CREDENTIALS_PSW', usernameVariable: 'DOCKERHUB_CREDENTIALS_USR')]) {
-                        echo "DockerHub Username: ${DOCKERHUB_CREDENTIALS_USR}"
-                        echo "DockerHub Password: ${DOCKERHUB_CREDENTIALS_PSW}"
-                    }
+                withCredentials([usernamePassword(credentialsId: 'DOCKER_HUB_CREDENTIAL', passwordVariable: 'DOCKERHUB_CREDENTIALS_PSW', usernameVariable: 'DOCKERHUB_CREDENTIALS_USR')]) {
+                    echo "DockerHub Username: ${DOCKERHUB_CREDENTIALS_USR}"
+                    echo "DockerHub Password: ${DOCKERHUB_CREDENTIALS_PSW}"
                 }
+            }
+        }
+        stage('Debug') {
+            steps {
+                echo "DockerHub Username: ${DOCKERHUB_CREDENTIALS_USR}"
+                echo "DockerHub Password: ${DOCKERHUB_CREDENTIALS_PSW}"
             }
         }
 
         stage('Docker Login Test') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: 'DOCKER_HUB_CREDENTIAL', passwordVariable: 'DOCKERHUB_CREDENTIALS_PSW', usernameVariable: 'DOCKERHUB_CREDENTIALS_USR')]) {
-                        sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
-                    }
+                    sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
                 }
             }
         }
@@ -85,11 +89,9 @@ pipeline {
         stage('Docker Build and Push') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: 'DOCKER_HUB_CREDENTIAL', passwordVariable: 'DOCKERHUB_CREDENTIALS_PSW', usernameVariable: 'DOCKERHUB_CREDENTIALS_USR')]) {
-                        sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
-                        sh 'docker build -t canbeaudocker/restaurant-listing-service:${VERSION} .'
-                        sh 'docker push canbeaudocker/restaurant-listing-service:${VERSION}'
-                    }
+                    sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+                    sh 'docker build -t canbeaudocker/restaurant-listing-service:${VERSION} .'
+                    sh 'docker push canbeaudocker/restaurant-listing-service:${VERSION}'
                 }
             }
         }
