@@ -119,7 +119,7 @@ pipeline {
                     sh 'git commit -m "Update image tag to 26"'
 
                     // Use sshagent to push changes
-                    sshagent(credentials: ['jenkins']) {
+                    sshagent(credentials: ['ssh-git']) {
                         sh 'git push origin HEAD:main'
                     }
                 }
