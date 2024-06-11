@@ -114,7 +114,7 @@ pipeline {
                         ]]
                     ])
                     // Update the image tag in the manifest file
-                    sh 'sed -i \'s/image:.*/image: canbeaudocker\\/restaurant-listing-service:26/\' aws/restaurant-manifest.yml'
+                    sh 'sed -i \'s/image:.*/image: canbeaudocker\\/restaurant-listing-service:{VERSION}/\' aws/restaurant-manifest.yml'
                     sh 'git add aws/restaurant-manifest.yml'
                     sh 'git commit -m "Update image tag to ${VERSION}"'
 
