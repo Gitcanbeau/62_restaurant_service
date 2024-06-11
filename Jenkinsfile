@@ -11,6 +11,15 @@ pipeline {
     }
 
     stages {
+
+        stage('Debug Credentials') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'DOCKER_HUB_CREDENTIAL', passwordVariable: 'DOCKERHUB_CREDENTIALS_PSW', usernameVariable: 'DOCKERHUB_CREDENTIALS_USR')]) {
+                    echo "DockerHub Username: ${DOCKERHUB_CREDENTIALS_USR}"
+                    echo "DockerHub Password: ${DOCKERHUB_CREDENTIALS_PSW}"
+                }
+            }
+        }
         stage('Debug') {
             steps {
                 echo "DockerHub Username: ${DOCKERHUB_CREDENTIALS_USR}"
