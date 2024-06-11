@@ -4,6 +4,8 @@ pipeline {
     environment {
         DOCKERHUB_CREDENTIALS = credentials('DOCKER_HUB_CREDENTIAL')
         VERSION = "${env.BUILD_ID}"
+        DOCKER_HUB_USERNAME = 'canbeaudocker'
+        DOCKER_HUB_PASSWORD = 'Docker950206'
     }
 
     tools {
