@@ -11,7 +11,6 @@ pipeline {
     }
 
     stages {
-
         stage('Debug') {
             steps {
                 echo "DockerHub Username: ${DOCKERHUB_CREDENTIALS_USR}"
@@ -21,25 +20,33 @@ pipeline {
 
         stage('Docker Login Test') {
             steps {
-                sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+                script {
+                    sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+                }
             }
         }
 
         stage('Maven Build') {
             steps {
-                sh 'mvn clean package -DskipTests'
+                script {
+                    sh 'mvn clean package -DskipTests'
+                }
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh 'mvn test'
+                script {
+                    sh 'mvn test'
+                }
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
-                sh 'mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar -Dsonar.host.url=http://3.101.143.247:9000/ -Dsonar.login=squ_26962e0f1dc3b125ac1425499d89f367089a36af'
+                script {
+                    sh 'mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar -Dsonar.host.url=http://3.101.143.247:9000/ -Dsonar.login=squ_26962e0f1dc3b125ac1425499d89f367089a36af'
+                }
             }
         }
 
@@ -72,9 +79,11 @@ pipeline {
 
         stage('Docker Build and Push') {
             steps {
-                sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
-                sh 'docker build -t canbeaudocker/restaurant-listing-service:${VERSION} .'
-                sh 'docker push canbeaudocker/restaurant-listing-service:${VERSION}'
+                script {
+                    sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+                    sh 'docker build -t canbeaudocker/restaurant-listing-service:${VERSION} .'
+                    sh 'docker push canbeaudocker/restaurant-listing-service:${VERSION}'
+                }
             }
         }
 
@@ -91,16 +100,14 @@ pipeline {
                     sh '''
                         sed -i "s/image:.*/image: canbeaudocker\\/restaurant-listing-service:${VERSION}/" aws/restaurant-manifest.yml
                     '''
-                    sh 'git checkout master'
-                    sh 'git add .'
-                    sh 'git commit -m "Update image tag"'
+                    sh 'git add aws/restaurant-manifest.yml'
+                    sh 'git commit -m "Update image tag to ${VERSION}"'
                     sshagent(['git-ssh']) {
-                        sh('git push')
+                        sh 'git push'
                     }
                 }
             }
         }
-
     }
 
     post {
@@ -112,3 +119,4 @@ pipeline {
         }
     }
 }
+
